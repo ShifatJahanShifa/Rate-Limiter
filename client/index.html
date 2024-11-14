@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate-Limiter</title>
+</head>
+<body>
+    <!-- <button onclick="handleClick()">Click Me</button> -->
+     <h1>Rate-Limiter</h1>
+    <div id="output"></div>
+    <script>
+        
+        async function handleClick() 
+        {
+            const response=await fetch('http://localhost:4000/tokenbucket')
+            const data = await response.json();
+            const elem=document.getElementById("output")
+            elem.style.color='black'
+            
+            const limit = parseInt(response.headers.get('X-RateLimit-Limit'))
+            const remaining = parseInt(response.headers.get('X-RateLimit-Remaining'))
+            const retryAfter = parseInt(response.headers.get('X-RateLimit-Retry-After'))
+            
+            if (response.status === 429) { 
+                
+                elem.innerText = `Too many requests. Retrying after ${retryAfter} miliseconds.`;
+                elem.style.color='green'
+                
+                // didnt work for less than or greater than 5 sec intentionally
+                
+                setTimeout(handleClick, retryAfter); 
+            }
+            else  
+            {
+                elem.innerText = `Message: ${data.message}\nRate Limit: ${limit}\nRemaining: ${remaining}\nRetry-After: ${retryAfter} miliseconds`;
+                console.log(limit)
+                console.log(remaining)
+                console.log(retryAfter)
+                setTimeout(handleClick,1000)
+            }
+        }
+
+        setTimeout(handleClick,0);
+        // setInterval(handleClick,0)
+
+    </script>
+</body>
+</html>
